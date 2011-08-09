@@ -1,0 +1,15 @@
+Build.PL
+Changes
+ignore.txt
+lib/Win32/ExcelSimple.pm
+MANIFEST			This list of files
+README
+t/00-load.t
+t/01-utils.t
+t/02-fileread.t
+t/03-filewrite.t
+t/boilerplate.t
+t/manifest.t
+t/pod-coverage.t
+t/pod.t
+t/test.xls

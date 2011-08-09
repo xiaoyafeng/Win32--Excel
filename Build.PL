@@ -1,0 +1,21 @@
+use 5.010;
+use strict;
+use warnings;
+use Module::Build;
+
+my $builder = Module::Build->new(
+    module_name         => 'Win32::ExcelSimple',
+    license             => 'perl',
+    dist_author         => q{Andy Xiao <andy.xiao@gmail.com>},
+    dist_version_from   => 'lib/Win32/ExcelSimple.pm',
+    build_requires => {
+        'Test::More' => 0,
+    },
+    requires => {
+        'perl' => 5.010,
+    },
+    add_to_cleanup      => [ 'Win32-ExcelSimple-*' ],
+    create_makefile_pl => 'traditional',
+);
+
+$builder->create_build_script();

@@ -1,0 +1,22 @@
+---
+abstract: 'The great new Win32::ExcelSimple!'
+author:
+  - 'Andy Xiao <andy.xiao@gmail.com>'
+build_requires:
+  Test::More: 0
+dynamic_config: 0
+generated_by: 'Module::Build version 0.3617'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: Win32-ExcelSimple
+provides:
+  Win32::ExcelSimple:
+    file: lib/Win32/ExcelSimple.pm
+    version: 0.01
+requires:
+  perl: 5.01
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.01

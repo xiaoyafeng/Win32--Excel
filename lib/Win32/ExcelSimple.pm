@@ -1,0 +1,206 @@
+package Win32::ExcelSimple;
+
+use 5.010;
+use DateTime;
+use Carp;
+use Encode;
+use DateTime;
+use DateTime::Format::Natural;
+use File::Find::Rule;
+use File::Spec::Functions;
+use Win32::FileTime;
+use Try::Tiny;
+use Data::Dumper;
+use Config::Tiny;
+use Win32::OLE qw(in with);
+use Win32::OLE::Const 'Microsoft Excel';
+use Win32::OLE::Variant;
+use Win32::OLE::NLS qw(:LOCALE :DATE);
+
+
+=head1 NAME
+
+Win32::ExcelSimple - The great new Win32::ExcelSimple!
+
+=head1 VERSION
+
+Version 0.01
+
+=cut
+
+our $VERSION = '0.01';
+
+
+
+sub new {
+	my ($class_name, $file_name) = shift;
+	my $Excel = Win32::OLE->GetActiveObject('Excel.Application')
+      || Win32::OLE->new( 'Excel.Application', 'Quit' );
+    $Excel->{DisplayAlerts} = 0;
+  $Win32::OLE::Warn = 2;   
+  my $book = $Excel->Workbooks->Open($file_name);
+  	my $self = {
+		  'excel_handle'   =>  $Excel,
+		  'book_handle'    =>  $book,
+
+	  }
+	bless $book, $class_name;
+	return $book;
+
+}
+
+sub write_excel{
+	my ($self, $sheet_name,$address, $data) = @_;
+	my $Sheet = $self->{ 'book_handle' }->Worksheets($sheet_name);
+	$Sheet->Activate();
+	$Sheet->Range($address)->{Value} = $data;
+	return 0;
+
+}
+
+sub read_excel{
+	my ($self, $sheet_name,$address) = @_;
+	my $Sheet = $self->{ 'book_handle' }->Worksheets($sheet_name);
+	$Sheet->Activate();
+	my $data = $Sheet->Range($address)->{Value};
+	return $data;
+}
+
+
+sub save_excel{
+
+	my $self = shift;
+	$self->{ 'book_handle' }->save();
+	return 0;
+
+}
+
+sub search_file_by_create_time{
+
+	 my ($self, $start_dir, $check_date ) = @_;
+    $check_date *= -1;   #reverse to plus
+   my $dt = DateTime->now();
+	$dt->subtract(days => $check_date);
+  my @files = File::Find::Rule->file()
+                              ->name( '*.xls' )
+                              ->in( $start_dir );
+my @excles;
+my @abs_files = map { catfile($_) }  @files;
+for my $file ( @abs_files ){
+	my $ft= Win32::FileTime->new( $file );
+	my @times = $ft->Create();
+	if ( $dt->year == $times[0] 
+	     and $dt->month == $times[1]
+      	     and $dt->day   == $times[3]
+           )            {   push @excles, $file;   }
+}
+
+
+    return \@today_excles;
+
+
+}
+
+sub close_excel{
+	my $self = shift;
+ 	$self->{ 'excel_handle' }->Workbooks->close;
+
+}
+
+
+sub DESTROY{
+
+	my $self = shift;
+	$self->save_excel();
+	print "save all and exit!!!\n";
+
+
+}
+
+=head1 SYNOPSIS
+
+Quick summary of what the module does.
+
+Perhaps a little code snippet.
+
+    use Win32::ExcelSimple;
+
+    my $foo = Win32::ExcelSimple->new();
+    ...
+
+=head1 EXPORT
+
+A list of functions that can be exported.  You can delete this section
+if you don't export anything, such as for a purely object-oriented module.
+
+=head1 SUBROUTINES/METHODS
+
+=head2 transpose_array
+
+
+=cut
+
+
+
+
+
+=head1 AUTHOR
+
+Andy Xiao, C<< <andy.xiao at gmail.com> >>
+
+=head1 BUGS
+
+Please report any bugs or feature requests to C<bug-win32-excelsimple at rt.cpan.org>, or through
+the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Win32-ExcelSimple>.  I will be notified, and then you'll
+automatically be notified of progress on your bug as I make changes.
+
+
+
+
+=head1 SUPPORT
+
+You can find documentation for this module with the perldoc command.
+
+    perldoc Win32::ExcelSimple
+
+
+You can also look for information at:
+
+=over 4
+
+=item * RT: CPAN's request tracker (report bugs here)
+
+L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Win32-ExcelSimple>
+
+=item * AnnoCPAN: Annotated CPAN documentation
+
+L<http://annocpan.org/dist/Win32-ExcelSimple>
+
+=item * CPAN Ratings
+
+L<http://cpanratings.perl.org/d/Win32-ExcelSimple>
+
+=item * Search CPAN
+
+L<http://search.cpan.org/dist/Win32-ExcelSimple/>
+
+=back
+
+
+=head1 ACKNOWLEDGEMENTS
+
+
+=head1 LICENSE AND COPYRIGHT
+
+Copyright 2011 Andy Xiao.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of either: the GNU General Public License as published
+by the Free Software Foundation; or the Artistic License.
+
+See http://dev.perl.org/licenses/ for more information.
+
+
+=cut
+
+1; # End of Win32::ExcelSimple

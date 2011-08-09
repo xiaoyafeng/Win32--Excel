@@ -1,0 +1,5 @@
+do{ my $x = {
+       'blib' => 1,
+       'Win32-ExcelSimple-*' => 1
+     };
+$x; }
