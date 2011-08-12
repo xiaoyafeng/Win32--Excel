@@ -1,6 +1,5 @@
 package Win32::ExcelSimple;
 
-use 5.010;
 use DateTime;
 use Carp;
 use Encode;
@@ -16,7 +15,7 @@ use Win32::OLE qw(in with);
 use Win32::OLE::Const 'Microsoft Excel';
 use Win32::OLE::Variant;
 use Win32::OLE::NLS qw(:LOCALE :DATE);
-
+use Perl6::Export;
 
 =head1 NAME
 
@@ -33,7 +32,7 @@ our $VERSION = '0.01';
 
 
 sub new {
-	my ($class_name, $file_name) = shift;
+	my ($class_name, $file_name) = @_;
 	my $Excel = Win32::OLE->GetActiveObject('Excel.Application')
       || Win32::OLE->new( 'Excel.Application', 'Quit' );
     $Excel->{DisplayAlerts} = 0;
@@ -43,9 +42,9 @@ sub new {
 		  'excel_handle'   =>  $Excel,
 		  'book_handle'    =>  $book,
 
-	  }
-	bless $book, $class_name;
-	return $book;
+	  };
+	bless $self, $class_name;
+	return $self;
 
 }
 
@@ -75,14 +74,14 @@ sub save_excel{
 
 }
 
-sub search_file_by_create_time{
+sub search_files is export(:MANDATORY) {
 
-	 my ($self, $start_dir, $check_date ) = @_;
+	 my ($start_dir, $search_string, $check_date ) = @_;
     $check_date *= -1;   #reverse to plus
    my $dt = DateTime->now();
 	$dt->subtract(days => $check_date);
   my @files = File::Find::Rule->file()
-                              ->name( '*.xls' )
+                              ->name( "*$search_string*" )
                               ->in( $start_dir );
 my @excles;
 my @abs_files = map { catfile($_) }  @files;
@@ -96,7 +95,7 @@ for my $file ( @abs_files ){
 }
 
 
-    return \@today_excles;
+    return \@excles;
 
 
 }
@@ -106,6 +105,18 @@ sub close_excel{
  	$self->{ 'excel_handle' }->Workbooks->close;
 
 }
+
+
+sub DESTROY{
+
+	my $self = shift;
+	$self->save_excel();
+	$self->close_excel();
+	print "save all and exit!!!\n";
+
+
+}
+
 =head1 SYNOPSIS
 
 Quick summary of what the module does.
